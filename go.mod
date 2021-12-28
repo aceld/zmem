@@ -1,3 +1,3 @@
-module ZMM
+module zmem
 
 go 1.14

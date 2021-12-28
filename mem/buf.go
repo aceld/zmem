@@ -2,7 +2,7 @@ package mem
 
 import "C"
 import (
-	"ZMM/c"
+	"zmem/c"
 	"fmt"
 )
 import "unsafe"
@@ -16,13 +16,13 @@ type Buf struct {
 	length int
 	//未处理数据的头部位置索引
 	head int
-	//当前io_buf所保存的数据地址
+	//当前buf所保存的数据地址
 	data unsafe.Pointer
 }
 
 
-//构造，创建一个IoBuf对象
-func NewIoBuf(size int) *Buf {
+//构造，创建一个Buf对象
+func NewBuf(size int) *Buf {
 	return &Buf{
 		Capacity: size,
 		length: 0,

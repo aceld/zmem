@@ -56,11 +56,11 @@ func MemPool() *BufPool{
 }
 
 func (bp *BufPool) makeBufList(cap int, num int) {
-	bp.Pool[cap] = NewIoBuf(cap)
+	bp.Pool[cap] = NewBuf(cap)
 
 	bp.prev = bp.Pool[m4K]
 	for i := 1; i < 5000; i ++ {
-		bp.prev.Next = NewIoBuf(m4K)
+		bp.prev.Next = NewBuf(m4K)
 		bp.prev = bp.prev.Next
 	}
 	bp.TotalMem += (uint64(cap)/1024) * uint64(num)
@@ -148,7 +148,7 @@ func (bp *BufPool) Alloc(N int) (*Buf, error) {
 			return nil, errors.New(errStr)
 		}
 
-		newBuf := NewIoBuf(index)
+		newBuf := NewBuf(index)
 		bp.TotalMem += uint64(index/1024)
 		bp.PoolLock.Unlock()
 		fmt.Printf("Alloc Mem Size: %d KB\n", newBuf.Capacity/1024)

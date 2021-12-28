@@ -1,7 +1,7 @@
 package c_test
 
 import (
-	"ZMM/c"
+	"zmem/c"
 	"bytes"
 	"encoding/binary"
 	"fmt"

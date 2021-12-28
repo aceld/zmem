@@ -23,4 +23,3 @@ func Memcpy(dest unsafe.Pointer, src []byte, length int) {
 	srcData := C.CBytes(src)
 	C.memcpy(dest, srcData, C.size_t(length))
 }
-
