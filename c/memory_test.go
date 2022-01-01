@@ -1,18 +1,18 @@
 package c_test
 
 import (
-	"zmem/c"
 	"bytes"
 	"encoding/binary"
 	"fmt"
 	"testing"
 	"unsafe"
+	"zmem/c"
 )
 
 func TestMemoryC(t *testing.T) {
 	data := c.Malloc(4)
 	fmt.Printf(" data %+v, %T\n", data, data)
-	myData := (*int)(data)
+	myData := (*uint32)(data)
 	*myData = 4
 	fmt.Printf(" data %+v, %T\n", *myData, *myData)
 
@@ -35,7 +35,7 @@ func IsLittleEndian() bool {
 	return (b == 0x04)
 }
 
-func IntToBytes(n int) []byte {
+func IntToBytes(n uint32) []byte {
 	x := int32(n)
 	bytesBuffer := bytes.NewBuffer([]byte{})
 
@@ -53,11 +53,11 @@ func IntToBytes(n int) []byte {
 func TestMemoryC2(t *testing.T) {
 	data := c.Malloc(4)
 	fmt.Printf(" data %+v, %T\n", data, data)
-	myData := (*int)(data)
+	myData := (*uint32)(data)
 	*myData = 5
 	fmt.Printf(" data %+v, %T\n", *myData, *myData)
 
-	var a int = 100
+	var a uint32 = 100
 	c.Memcpy(data, IntToBytes(a), 4)
 	fmt.Printf(" data %+v, %T\n", *myData, *myData)
 

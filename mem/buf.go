@@ -2,8 +2,8 @@ package mem
 
 import "C"
 import (
-	"zmem/c"
 	"fmt"
+	"zmem/c"
 )
 import "unsafe"
 

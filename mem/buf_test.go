@@ -1,7 +1,7 @@
 package mem_test
 
 import (
-	"ZMM/mem"
+	"zmem/mem"
 	"fmt"
 	"testing"
 )
@@ -42,9 +42,9 @@ func TestBufPoolSetGet(t *testing.T) {
 	}
 
 	buffer.SetBytes([]byte("Aceld12345"))
-	fmt.Printf("GetBytes = %+v\n", buffer.GetBytes())
+	fmt.Printf("GetBytes = %+v, ToString = %s\n", buffer.GetBytes(), string(buffer.GetBytes()))
 	buffer.Pop(4)
-	fmt.Printf("GetBytes = %+v\n", buffer.GetBytes())
+	fmt.Printf("GetBytes = %+v, ToString = %s\n", buffer.GetBytes(), string(buffer.GetBytes()))
 }
 
 func TestBufPoolAdjust(t *testing.T) {

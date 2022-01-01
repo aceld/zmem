@@ -26,7 +26,7 @@ const (
 )
 
 //单例对象
-var bufPootInstance *BufPool
+var bufPoolInstance *BufPool
 var once sync.Once
 
 
@@ -38,38 +38,36 @@ type BufPool struct {
 
 	//总buffer池的内存大小 单位为KB
 	TotalMem uint64
-
-	//BufPoll Buf列表的游标地址
-	prev *Buf
 }
 
 func MemPool() *BufPool{
 	once.Do(func() {
-		bufPootInstance = new(BufPool)
-		bufPootInstance.Pool = make(map[int]*Buf)
-		bufPootInstance.TotalMem = 0
-		bufPootInstance.prev = nil
-		bufPootInstance.initPool()
+		bufPoolInstance = new(BufPool)
+		bufPoolInstance.Pool = make(map[int]*Buf)
+		bufPoolInstance.TotalMem = 0
+		bufPoolInstance.initPool()
 	})
 
-	return bufPootInstance
+	return bufPoolInstance
 }
 
 func (bp *BufPool) makeBufList(cap int, num int) {
 	bp.Pool[cap] = NewBuf(cap)
 
-	bp.prev = bp.Pool[m4K]
-	for i := 1; i < 5000; i ++ {
-		bp.prev.Next = NewBuf(m4K)
-		bp.prev = bp.prev.Next
+	var prev *Buf
+	prev = bp.Pool[cap]
+	for i := 1; i < num; i ++ {
+		prev.Next = NewBuf(cap)
+		prev = prev.Next
 	}
 	bp.TotalMem += (uint64(cap)/1024) * uint64(num)
 }
 
 /*
-初始化内存池 主要是预先开辟一定量的空间
-这里BufPool是一个hash，每个key都是不同空间容量
-对应的value是一个Buf集合的链表
+	初始化内存池 主要是预先开辟一定量的空间
+	这里BufPool是一个hash，每个key都是不同空间容量
+	对应的value是一个Buf集合的链表
+
 BufPool -->   [m4K] -- Buf-Buf-Buf-Buf...(BufList)
               [m16K] -- Buf-Buf-Buf-Buf...(BufList)
               [m64K] -- Buf-Buf-Buf-Buf...(BufList)
@@ -80,27 +78,27 @@ BufPool -->   [m4K] -- Buf-Buf-Buf-Buf...(BufList)
  */
 func (bp *BufPool) initPool() {
 	//----> 开辟4K buf 内存池
-	// 4K的IoBuf 预先开辟5000个，约20MB供开发者使用
+	// 4K的Buf 预先开辟5000个，约20MB供开发者使用
 	bp.makeBufList(m4K, 5000)
 
 	//----> 开辟16K buf 内存池
-	//16K的IoBuf 预先开辟1000个，约16MB供开发者使用
+	//16K的Buf 预先开辟1000个，约16MB供开发者使用
 	bp.makeBufList(m16K, 1000)
 
 	//----> 开辟64K buf 内存池
-	//64K的IoBuf 预先开辟500个，约32MB供开发者使用
+	//64K的Buf 预先开辟500个，约32MB供开发者使用
 	bp.makeBufList(m64K, 500)
 
 	//----> 开辟256K buf 内存池
-	//256K的IoBuf 预先开辟200个，约50MB供开发者使用
+	//256K的Buf 预先开辟200个，约50MB供开发者使用
 	bp.makeBufList(m256K, 200)
 
 	//----> 开辟1M buf 内存池
-	//1M的IoBuf 预先开辟50个，约50MB供开发者使用
+	//1M的Buf 预先开辟50个，约50MB供开发者使用
 	bp.makeBufList(m1M, 50)
 
 	//----> 开辟4M buf 内存池
-	//4M的IoBuf 预先开辟20个，约80MB供开发者使用
+	//4M的Buf 预先开辟20个，约80MB供开发者使用
 	bp.makeBufList(m4M, 20)
 
 	//----> 开辟8M buf 内存池
@@ -114,11 +112,13 @@ func (bp *BufPool) MemSize() uint64 {
 	return bp.TotalMem
 }
 
-//开辟一个IoBuf
-//1 如果上层需要N个字节的大小的空间，找到与N最接近的buf hash组，取出，
-//2 如果该组已经没有节点使用，可以额外申请
-//3 总申请长度不能够超过最大的限制大小 EXTRA_MEM_LIMIT
-//4 如果有该节点需要的内存块，直接取出，并且将该内存块从pool摘除
+/*
+	开辟一个Buf
+	1 如果上层需要N个字节的大小的空间，找到与N最接近的buf hash组，取出，
+	2 如果该组已经没有节点使用，可以额外申请
+	3 总申请长度不能够超过最大的限制大小 EXTRA_MEM_LIMIT
+	4 如果有该节点需要的内存块，直接取出，并且将该内存块从pool摘除
+*/
 func (bp *BufPool) Alloc(N int) (*Buf, error) {
 	//1 找到N最接近哪hash 组
 	var index int
@@ -166,7 +166,7 @@ func (bp *BufPool) Alloc(N int) (*Buf, error) {
 }
 
 
-//当Alloc之后，当前Buf被使用完，需要重置这个IoBuf,需要将该buf放回pool中
+//当Alloc之后，当前Buf被使用完，需要重置这个Buf,需要将该buf放回pool中
 func (bp *BufPool) Revert(buf *Buf) error {
 	//每个buf的容量都是固定的 在hash的key中取值
 	index := buf.Capacity
